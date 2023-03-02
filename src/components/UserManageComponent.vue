@@ -6,7 +6,7 @@
           >增加用户
         </el-button>
         <el-dialog v-model="store.Eldialog">
-          <UserEditForm @on_submit="onSubmit" />
+          <UserEditForm @on_submit="onSubmit" @on_cancel = "onCancel" ref="validForm" />
         </el-dialog>
         <el-input
           placeholder="Please input"
@@ -23,7 +23,7 @@
   <el-row>
     <el-col :span="24">
       <div class="user-table">
-        <el-table :data="query?search:userData" height="100%" border>
+        <el-table :data="query ? search : userData" height="100%" border>
           <el-table-column prop="name" label="姓名"></el-table-column>
           <el-table-column prop="sex" label="性别"></el-table-column>
           <el-table-column prop="age" label="年龄"></el-table-column>
@@ -57,7 +57,7 @@
   </el-row>
 </template>
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, nextTick } from "vue";
 import { addUser, getUser, delUser, editUser, Search } from "/api/api";
 import UserEditForm from "@/components/UserEditForm.vue";
 import { useFormStore } from "@/stores/form";
@@ -66,21 +66,25 @@ const pageSize = 12;
 let total = ref(0);
 let userData = ref([]);
 let currentPage = ref(1);
-let functype = ref(0);
+let funcType = ref(0);
 let funcRow = ref();
 const store = useFormStore();
 const query = ref();
 const search = ref([]);
+const validForm = ref(null);
 function Action(type, row) {
   if (type === 1) {
     store.Eldialog = true;
-    functype.value = type;
+    funcType.value = type;
   }
   if (type === 2) {
     store.Eldialog = true;
-    functype.value = type;
+    funcType.value = type;
     funcRow.value = row;
-    store.storeform = JSON.parse(JSON.stringify(row));
+    (async ()=>{
+      await nextTick();
+      store.storeform = JSON.parse(JSON.stringify(row));
+    })()
   }
   if (type === 3) {
     (async () => {
@@ -90,43 +94,50 @@ function Action(type, row) {
       total.value = data.userLength;
     })();
     ElMessage({ message: "已删除", type: "warning" });
-    query.value = ""
+    query.value = "";
   }
 }
-
+function onCancel(){
+  store.Eldialog = false;
+  currentPage.value = 1;
+  validForm.value.validForm.resetFields();
+}
 function onSubmit() {
   store.Eldialog = false;
   currentPage.value = 1;
-  if (functype.value === 1) {
-    (async () => {
-      await addUser(store.storeform);
-      userData.value = (
-        await getUser({ begin: currentPage.value, size: pageSize })
-      ).userManage;
-      total.value = (await getUser()).userLength;
-    })();
-    ElMessage({ message: "添加成功", type: "success" });
-    Object.keys(store.storeform).forEach((key) => {
-      store.storeform[key] = "";
+  if (funcType.value === 1) {
+    validForm.value.validForm.validate((valid)=>{
+      if (valid){
+        (async () => {
+          await addUser(store.storeform);
+          userData.value = (
+            await getUser({ begin: currentPage.value, size: pageSize })
+          ).userManage;
+          total.value = (await getUser()).userLength;
+          validForm.value.validForm.resetFields();
+        })();
+        ElMessage({ message: "添加成功", type: "success" });
+      }else {
+        ElMessage({message:"输入错误", type:"warning"})
+        validForm.value.validForm.resetFields();
+      }
     });
-    query.value = ""
+    query.value = "";
   }
-  if (functype.value === 2) {
+  if (funcType.value === 2) {
     (async () => {
       await editUser(store.storeform);
       userData.value = (await getUser()).userManage;
       total.value = (await getUser()).userLength;
+      validForm.value.validForm.resetFields();
     })();
     ElMessage({ message: "修改成功", type: "success" });
-    Object.keys(store.storeform).forEach((key) => {
-      store.storeform[key] = "";
-    });
-    query.value = ""
+    query.value = "";
   }
 }
 function querySearch() {
   (async () => {
-    search.value = (await Search(query.value)).data.data
+    search.value = (await Search(query.value)).data.data;
   })();
 }
 onMounted(() => {
@@ -136,6 +147,14 @@ onMounted(() => {
     total.value = data.userLength;
   })();
   currentPage.value = 1;
+  store.storeform = {
+    name: "",
+    age: "",
+    address: "",
+    birthday: "",
+    id:"",
+    sex: "",
+  }
 });
 
 watch(
@@ -148,19 +167,22 @@ watch(
     })();
   }
 );
-watch(()=>query.value,(newval,oldval)=>{
-  if (newval!=oldval) {
-    querySearch()
-    total.value = search.value.length
+watch(
+  () => query.value,
+  (newval, oldval) => {
+    if (newval != oldval) {
+      querySearch();
+      total.value = search.value.length;
+    }
+    if (newval == "") {
+      (async () => {
+        await editUser(store.storeform);
+        userData.value = (await getUser()).userManage;
+        total.value = (await getUser()).userLength;
+      })();
+    }
   }
-  if (newval == ''){
-    (async () => {
-      await editUser(store.storeform);
-      userData.value = (await getUser()).userManage;
-      total.value = (await getUser()).userLength;
-    })();
-  }
-})
+);
 </script>
 
 <style scoped lang="sass">

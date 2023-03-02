@@ -1,5 +1,6 @@
 import Mock from "mockjs";
 import homeApi from "./MockData";
+import loginApi from "./Permission";
 Mock.mock(/api\/home\/getData/, "post", (options) => {
   const action = JSON.parse(options.body);
   if (action) {
@@ -23,3 +24,7 @@ Mock.mock(/api\/home\/editUser/, "post", (options) => {
 Mock.mock(/api\/home\/Search/, "post", (options) => {
   return homeApi.searchUserData(options.body);
 });
+Mock.mock(/api\/permission\/getMenu/, "post", (options)=>{
+  const data = JSON.parse(options.body)._value
+  return loginApi.permissionCheck(data)
+})

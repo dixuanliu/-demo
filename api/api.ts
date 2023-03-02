@@ -22,3 +22,7 @@ export async function Search(query){
   const data = await axios.post("api/home/Search", query);
   return data
 }
+export async function Login(data){
+  const result = await axios.post("api/permission/getMenu", data);
+  return result
+}

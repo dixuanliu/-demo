@@ -5,7 +5,7 @@ import UserView from "@/views/UserView.vue";
 import OtherPageOne from "@/views/OtherPageOne.vue";
 import OtherPageTwo from "@/views/OtherPageTwo.vue";
 import MallView from "@/views/MallView.vue";
-
+import LoginView from "@/views/LoginView.vue";
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -13,28 +13,14 @@ const router = createRouter({
       path:'/',
       component:MainRoute,
       redirect:'/home',
+      name:'Main',
       children:[
-        {
-          path:'home',
-          component:Homeview
-        },
-        {
-          path:'user',
-          component:UserView
-        },
-        {
-          path:'page1',
-          component:OtherPageOne
-        },
-        {
-          path:'page2',
-          component:OtherPageTwo
-        },
-        {
-          path:'mall',
-          component:MallView
-        }
       ]
+    },
+    {
+      path:"/login",
+      name: "login",
+      component:LoginView,
     }
   ]
 })

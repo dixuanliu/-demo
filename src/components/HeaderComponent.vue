@@ -4,7 +4,6 @@
       <el-button icon="menu" @click = 'store.collapse()'>
       </el-button>
       <el-breadcrumb separator="/">
-<!--   we will be back     -->
         <el-breadcrumb-item  v-for="item in store.tabsList" :key="item.name" :to="item.path">
             {{item.label}}
         </el-breadcrumb-item>
@@ -13,11 +12,11 @@
     <div class="right">
       <el-dropdown trigger="click">
         <el-avatar :size="'default'" :fit="'cover'">
-          <img src="/profile.jpeg">
+          <img src="/profile.jpeg" alt="">
         </el-avatar>
         <template #dropdown>
           <el-dropdown-item>个人</el-dropdown-item>
-          <el-dropdown-item>退出</el-dropdown-item>
+          <el-dropdown-item @click="exit">退出</el-dropdown-item>
         </template>
       </el-dropdown>
 
@@ -27,10 +26,19 @@
 
 <script setup>
 import {useTabsStore} from "@/stores/tab";
-
+import jsCookie from "js-cookie";
+import {useRouter} from "vue-router";
+import { useLoginStore } from "@/stores/login";
 const Route = defineProps(['Route'])
 const store = useTabsStore()
-
+const router = useRouter()
+const loginstore = useLoginStore()
+function exit(){
+  jsCookie.remove('token')
+  jsCookie.remove('menu')
+  loginstore.Menu = [];
+  router.push('/login')
+}
 </script>
 
 <style scoped lang=sass>

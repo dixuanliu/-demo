@@ -3,6 +3,13 @@ const list: [object] = [];
 const DatePice: [string] = [];
 let userManage: [object] = [];
 let begin = 20191000;
+const userData = [
+  {
+    id: 1,
+    name: "Admin",
+    password: "123456"
+  }
+]
 for (let i = 0; i < 7; i++) {
   begin++;
   DatePice.push(begin.toString());

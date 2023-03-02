@@ -52,10 +52,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive } from "vue";
+import { computed, Ref, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useTabsStore } from "@/stores/tab";
+import {useLoginStore} from "@/stores/login";
+import jsCookie from "js-cookie";
+
 const store = useTabsStore();
+const loginstore = useLoginStore()
 interface MenuDataList {
   children?: MenuDataList[];
   path?: string;
@@ -64,57 +68,21 @@ interface MenuDataList {
   icon: string;
   url?: string;
 }
-const MenuData: MenuDataList[] = reactive([
-  {
-    path: "/home",
-    name: "home",
-    label: "首页",
-    icon: "HomeFilled",
-    url: "Home/Home",
-  },
-  {
-    path: "/mall",
-    name: "mall",
-    label: "商品管理",
-    icon: "TakeawayBox",
-    url: "MallManage/MallManage",
-  },
-  {
-    path: "/user",
-    name: "user",
-    label: "用户管理",
-    icon: "UserFilled",
-    url: "UserManage/UserManage",
-  },
-  {
-    label: "其他",
-    icon: "LocationFilled",
-    children: [
-      {
-        path: "/page1",
-        name: "page1",
-        label: "页面1",
-        icon: "Grid",
-        url: "Other/PageOne",
-      },
-      {
-        path: "/page2",
-        name: "page2",
-        label: "页面2",
-        icon: "Grid",
-        url: "Other/PageTwo",
-      },
-    ],
-  },
-]);
+let MenuData :Ref<MenuDataList[]>= ref([])
+if (loginstore.Menu === []){
+  MenuData.value  = loginstore.Menu
+}else {
+  MenuData.value = JSON.parse(jsCookie.get('menu'))
+  loginstore.Menu = JSON.parse(jsCookie.get('menu'))
+}
 const router = useRouter();
 let HasChildren = computed(() => {
-  return MenuData.filter((value) => {
+  return MenuData.value.filter((value) => {
     return value.children;
   });
 }).value;
 let NoChildren = computed(() => {
-  return MenuData.filter((value) => {
+  return MenuData.value.filter((value) => {
     return !value.children;
   });
 }).value;

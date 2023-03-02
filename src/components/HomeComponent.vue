@@ -3,6 +3,9 @@ import * as echarts from "echarts";
 import { onMounted, Ref, ref } from "vue";
 import axios from "axios";
 import { SeriesOption } from "echarts";
+import {useLoginStore} from "@/stores/login";
+
+const store = useLoginStore()
 const echart: any = ref(null);
 const echartTwo: any = ref(null);
 const echartThree: any = ref(null);
@@ -12,7 +15,6 @@ let videodata = ref();
 let orderdata = ref();
 let userdata = ref();
 axios.post('api/home/getData').then(res=>{
-  console.log(res)
 })
 
 onMounted(() => {
@@ -144,12 +146,12 @@ onMounted(() => {
             <img src="/profile.jpeg" alt="" />
           </el-avatar>
           <div class="userinfo">
-            <p class="name">Access</p>
-            <p class="access">管理员</p>
+            <p class="name">{{store.user.name}}</p>
+            <p class="access">{{store.user.permission}}</p>
           </div>
         </div>
         <div class="login-info">
-          <p class="last-login-time">上次登录时间<span>2022-2-24</span></p>
+          <p class="last-login-time">上次登录时间<span>{{store.user.last_login_time}}</span></p>
           <p class="last-login-location">上次登录地址<span>Chengdu</span></p>
         </div>
       </el-card>
