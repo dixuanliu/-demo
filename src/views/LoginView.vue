@@ -56,6 +56,8 @@ const rules = reactive({
   password: [{ required: true, trigger: "blur", message: "请输入密码" }],
 });
 
+
+
 function userLogin(){
   validForm.value.validate((valid)=>{
     if (valid) {
@@ -66,27 +68,11 @@ function userLogin(){
           result.data.data.menu.forEach(item=>{
             store.Menu.push(item);
           });
+          jsCookie.set('menu', JSON.stringify(store.Menu))
+          store.addRouter()
           store.user.name = loginForm.value.name;
           store.user.permission = result.data.data.permission;
           store.user.last_login_time = dateformat(new Date(),'yyyy-mm-dd HH:MM');
-          jsCookie.set('menu', JSON.stringify(store.Menu))
-          const menuArray = ref([])
-          if (store.Menu){
-            store.Menu.forEach(item=>{
-              if (item.children){
-                item.children = item.children.map(item=>{
-                  item.component = () => import(`.${item.url}`);
-                  return item
-                })
-                menuArray.value.push(...item.children)
-              }else {
-                item.component = ()=>import(`.${item.url}`);
-                menuArray.value.push(item)
-              }
-            })
-            console.log(menuArray.value)
-            menuArray.value.forEach(item=>{router.addRoute('Main',item)})
-          }
           router.push('/home')
         } else {
           ElMessage({ message: "密码或用户名错误", type: "error" })
